@@ -46,5 +46,5 @@ Każde zamówienie posiada datę dodania, na podstawie której obliczana jest li
 ### Screenshots
 
 <img src="screenshots/1.jpg" width="300"/>
-<img src="screenshots/2.png" width="300"/>
-<img src="screenshots/3.png" width="300"/>
+<img src="screenshots/2.jpg" width="300"/>
+<img src="screenshots/3.jpg" width="300"/>
