@@ -9,14 +9,14 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.ZamowieniaAPP" >
+        android:supportsRtl="true">
+
         <activity
             android:name=".MainActivity"
             android:screenOrientation="portrait"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.ZamowieniaAPP" >
+            android:theme="@style/Theme.ZamowieniaAPP.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

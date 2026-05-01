@@ -45,6 +45,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 data class Order(
     val data: String,
@@ -85,6 +89,7 @@ fun OrderEntity.toOrder(): Order {
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
 
         val db = Room.databaseBuilder(
@@ -259,10 +264,19 @@ fun MainScreen(orderDao: OrderDao) {
                     ordersUi.filter { !it.isRozliczone }
                 }
 
+// 👉 sortowanie tylko dla NIEROZLICZONYCH (czyli showHistory == false)
+                val ordersToShow = if (!showHistory) {
+                    filteredOrders.sortedBy { order ->
+                        LocalDate.parse(order.data, DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                    }
+                } else {
+                    filteredOrders
+                }
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(filteredOrders) { order ->
+                    items(ordersToShow) { order ->
                         OrderCard(
                             order = order,
                             isSelected = selectedOrderIds.contains(order.id),
@@ -614,10 +628,27 @@ fun OrderCard(
 
             Text(
                 text = "Data: ${order.data}",
-
                 fontFamily = FontFamily.Monospace,
                 color = Color.White
             )
+
+            if (!order.isRozliczone) {
+
+                val dni = policzDni(order.data)
+
+                val kolorDni = when {
+                    dni < 5 -> Color.LightGray
+                    dni < 7 -> Color(0xFFFFC107)
+                    else -> Color.Red
+                }
+
+                Text(
+                    text = "Minęło: $dni dni",
+                    fontFamily = FontFamily.Monospace,
+                    color = kolorDni,
+                    fontSize = 12.sp
+                )
+            }
 
 
 
@@ -659,17 +690,31 @@ fun OrderDetailsScreen(
         Text("Produkt: ${order.produkt}", color = Color.White, fontFamily = FontFamily.Monospace)
         Text("Firma: ${order.firma}", color = Color.White, fontFamily = FontFamily.Monospace)
         Text("Płatność: ${order.platnosc}", color = Color.White, fontFamily = FontFamily.Monospace)
-        Text("Data: ${order.data}", color = Color.White, fontFamily = FontFamily.Monospace)
 
-        if (order.isRozliczone) {
+
+        Text(
+            text = "Data: ${order.data}",
+            color = Color.White,
+            fontFamily = FontFamily.Monospace
+        )
+
+        if (!order.isRozliczone) {
+            val dni = policzDni(order.data)
+
             Text(
-                text = "Rozliczono: ${order.dataRozliczenia}",
+                text = "Minęło: $dni dni",
                 color = Color.White,
                 fontFamily = FontFamily.Monospace
             )
         }
 
-        Text("Opis: ${order.opis}", color = Color.White, fontFamily = FontFamily.Monospace)
+        if (order.isRozliczone) {
+            Text(
+                text = "Zakończono: ${order.dataRozliczenia}",
+                color = Color.White,
+                fontFamily = FontFamily.Monospace
+            )
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -738,4 +783,12 @@ fun OrderDetailsScreen(
             }
         }
     }
+}
+
+fun policzDni(dataString: String): Long {
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+    val dataZamowienia = LocalDate.parse(dataString, formatter)
+    val dzis = LocalDate.now()
+
+    return ChronoUnit.DAYS.between(dataZamowienia, dzis)
 }
