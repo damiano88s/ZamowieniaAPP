@@ -49,6 +49,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.time.format.DateTimeParseException
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+
 
 data class Order(
     val data: String,
@@ -330,6 +334,7 @@ fun AddOrderScreen(
     var opisFocused by remember { mutableStateOf(false) }
     var dataFocused by remember { mutableStateOf(false) }
     val dataDoZapisu = if (data.isNotBlank()) data else dzisiejszaData
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     Scaffold(
@@ -540,6 +545,13 @@ fun AddOrderScreen(
                             firma.isNotBlank() &&
                             platnosc.isNotBlank()
                         ) {
+
+                            // 🔥 WALIDACJA DATY
+                            if (!czyDataPoprawna(dataDoZapisu)) {
+                                Toast.makeText(context, "Niepoprawna data!", Toast.LENGTH_SHORT).show()
+                                return@OutlinedButton
+                            }
+
                             val newOrder = Order(
                                 data = dataDoZapisu,
                                 firma = firma,
@@ -787,8 +799,29 @@ fun OrderDetailsScreen(
 
 fun policzDni(dataString: String): Long {
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-    val dataZamowienia = LocalDate.parse(dataString, formatter)
-    val dzis = LocalDate.now()
 
-    return ChronoUnit.DAYS.between(dataZamowienia, dzis)
+    return try {
+        val dataZamowienia = LocalDate.parse(dataString, formatter)
+        val dzis = LocalDate.now()
+
+        if (dataZamowienia.isAfter(dzis)) return 0
+
+        ChronoUnit.DAYS.between(dataZamowienia, dzis)
+    } catch (e: Exception) {
+        0
+    }
 }
+
+fun czyDataPoprawna(data: String): Boolean {
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
+    return try {
+        val wpisanaData = LocalDate.parse(data, formatter)
+        val dzisiaj = LocalDate.now()
+
+        !wpisanaData.isAfter(dzisiaj)
+    } catch (e: DateTimeParseException) {
+        false
+    }
+}
+
