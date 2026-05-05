@@ -45,6 +45,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -116,6 +118,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(orderDao: OrderDao) {
 
     var showAddScreen by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val orders by orderDao.getAllOrders()
         .collectAsState(initial = emptyList())
 
@@ -137,7 +140,7 @@ fun MainScreen(orderDao: OrderDao) {
                     ).format(java.util.Date())
                 )
 
-                kotlinx.coroutines.GlobalScope.launch {
+                scope.launch {
                     orderDao.updateOrder(updated.toEntity())
                 }
                 selectedOrder = null
@@ -149,7 +152,7 @@ fun MainScreen(orderDao: OrderDao) {
                     dataRozliczenia = ""
                 )
 
-                kotlinx.coroutines.GlobalScope.launch {
+                scope.launch {
                     orderDao.updateOrder(updated.toEntity())
                 }
                 selectedOrder = null
@@ -161,7 +164,7 @@ fun MainScreen(orderDao: OrderDao) {
             onBack = { showAddScreen = false },
             onSave = { newOrder ->
 
-                kotlinx.coroutines.GlobalScope.launch {
+                scope.launch {
                     orderDao.insertOrder(newOrder.toEntity())
                 }
 
@@ -179,10 +182,8 @@ fun MainScreen(orderDao: OrderDao) {
 
                             val idsToDelete = selectedOrderIds.toList()
 
-                            kotlinx.coroutines.GlobalScope.launch {
-                                idsToDelete.forEach { id ->
-                                    orderDao.deleteOrder(id)
-                                }
+                            scope.launch {
+                                orderDao.deleteOrders(idsToDelete)
                             }
 
                             selectedOrderIds = emptySet()
@@ -271,16 +272,46 @@ fun MainScreen(orderDao: OrderDao) {
 // 👉 sortowanie tylko dla NIEROZLICZONYCH (czyli showHistory == false)
                 val ordersToShow = if (!showHistory) {
                     filteredOrders.sortedBy { order ->
-                        LocalDate.parse(order.data, DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                        parseOrderDate(order.data)
                     }
                 } else {
                     filteredOrders
                 }
 
+                Text(
+                    text = "${ordersToShow.size} ${if (showHistory) "rozliczone" else "nierozliczone"}",
+                    fontFamily = FontFamily.Monospace,
+                    color = Color.LightGray,
+                    fontSize = 12.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(ordersToShow) { order ->
+                    if (ordersToShow.isEmpty()) {
+                        item {
+                            Text(
+                                text = if (showHistory) {
+                                    "Brak rozliczonych zamówień"
+                                } else {
+                                    "Brak nierozliczonych zamówień"
+                                },
+                                fontFamily = FontFamily.Monospace,
+                                color = Color.Gray,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 32.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+
+                    items(
+                        items = ordersToShow,
+                        key = { order -> order.id }
+                    ) { order ->
                         OrderCard(
                             order = order,
                             isSelected = selectedOrderIds.contains(order.id),
@@ -350,6 +381,7 @@ fun AddOrderScreen(
                         focusManager.clearFocus()
                     }
                 }
+                .verticalScroll(rememberScrollState())
                 .padding(padding)
                 .padding(16.dp)
         )  {
@@ -537,44 +569,34 @@ fun AddOrderScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
+                val canSave = produkt.isNotBlank() && firma.isNotBlank() && platnosc.isNotBlank()
 
                 OutlinedButton(
+                    enabled = canSave,
                     onClick = {
-                        if (
-                            produkt.isNotBlank() &&
-                            firma.isNotBlank() &&
-                            platnosc.isNotBlank()
-                        ) {
-
-                            // 🔥 WALIDACJA DATY
-                            if (!czyDataPoprawna(dataDoZapisu)) {
-                                Toast.makeText(context, "Niepoprawna data!", Toast.LENGTH_SHORT).show()
-                                return@OutlinedButton
-                            }
-
-                            val newOrder = Order(
-                                data = dataDoZapisu,
-                                firma = firma,
-                                platnosc = platnosc,
-                                produkt = produkt,
-                                opis = opis
-                            )
-                            onSave(newOrder)
+                        if (!czyDataPoprawna(dataDoZapisu)) {
+                            Toast.makeText(context, "Niepoprawna data!", Toast.LENGTH_SHORT).show()
+                            return@OutlinedButton
                         }
+
+                        val newOrder = Order(
+                            data = dataDoZapisu,
+                            firma = firma,
+                            platnosc = platnosc,
+                            produkt = produkt.trim(),
+                            opis = opis.trim()
+                        )
+                        onSave(newOrder)
                     },
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (
-                            produkt.isNotBlank() && firma.isNotBlank() && platnosc.isNotBlank()
-                        ) Color(0xFF00C853) else Color.Transparent,
-                        contentColor = if (
-                            produkt.isNotBlank() && firma.isNotBlank() && platnosc.isNotBlank()
-                        ) Color.Black else Color.White
+                        containerColor = if (canSave) Color(0xFF00C853) else Color.Transparent,
+                        contentColor = if (canSave) Color.Black else Color.White,
+                        disabledContainerColor = Color.Transparent,
+                        disabledContentColor = Color.Gray
                     ),
                     border = BorderStroke(
                         1.dp,
-                        if (
-                            produkt.isNotBlank() && firma.isNotBlank() && platnosc.isNotBlank()
-                        ) Color(0xFF00C853) else Color.White
+                        if (canSave) Color(0xFF00C853) else Color.Gray
                     )
                 ) {
                     Text("ZAPISZ")
@@ -684,6 +706,7 @@ fun OrderDetailsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.Top
     ) {
@@ -703,6 +726,13 @@ fun OrderDetailsScreen(
         Text("Firma: ${order.firma}", color = Color.White, fontFamily = FontFamily.Monospace)
         Text("Płatność: ${order.platnosc}", color = Color.White, fontFamily = FontFamily.Monospace)
 
+        if (order.opis.isNotBlank()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text("Opis:", color = Color.LightGray, fontFamily = FontFamily.Monospace)
+            Text(order.opis, color = Color.White, fontFamily = FontFamily.Monospace)
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = "Data: ${order.data}",
@@ -812,6 +842,16 @@ fun policzDni(dataString: String): Long {
     }
 }
 
+fun parseOrderDate(dataString: String): LocalDate {
+    val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+
+    return try {
+        LocalDate.parse(dataString, formatter)
+    } catch (e: DateTimeParseException) {
+        LocalDate.MAX
+    }
+}
+
 fun czyDataPoprawna(data: String): Boolean {
     val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
@@ -824,4 +864,3 @@ fun czyDataPoprawna(data: String): Boolean {
         false
     }
 }
-

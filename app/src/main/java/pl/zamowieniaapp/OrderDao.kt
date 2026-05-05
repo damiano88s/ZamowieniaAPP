@@ -18,6 +18,9 @@ interface OrderDao {
     @Query("DELETE FROM orders WHERE id = :orderId")
     suspend fun deleteOrder(orderId: Long)
 
+    @Query("DELETE FROM orders WHERE id IN (:orderIds)")
+    suspend fun deleteOrders(orderIds: List<Long>)
+
     @Query("SELECT * FROM orders ORDER BY id DESC")
     fun getAllOrders(): Flow<List<OrderEntity>>
 
