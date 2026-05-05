@@ -4,12 +4,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import pl.zamowieniaapp.ui.theme.ZamowieniaAPPTheme
 
@@ -47,13 +52,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.painterResource
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.format.DateTimeParseException
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.delay
 
 
 data class Order(
@@ -95,7 +103,7 @@ fun OrderEntity.toOrder(): Order {
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        setTheme(R.style.Theme_ZamowieniaAPP)
         super.onCreate(savedInstanceState)
 
         val db = Room.databaseBuilder(
@@ -108,8 +116,92 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ZamowieniaAPPTheme {
-                MainScreen(orderDao)
+                AppWithAnimatedSplash(orderDao)
             }
+        }
+    }
+}
+
+@Composable
+fun AppWithAnimatedSplash(orderDao: OrderDao) {
+    var showSplash by remember { mutableStateOf(true) }
+
+    if (showSplash) {
+        AnimatedSplashScreen(
+            onFinished = { showSplash = false }
+        )
+    } else {
+        MainScreen(orderDao)
+    }
+}
+
+@Composable
+fun AnimatedSplashScreen(
+    onFinished: () -> Unit
+) {
+    val scale = remember { Animatable(0.68f) }
+    val alpha = remember { Animatable(0f) }
+    val titleAlpha = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        alpha.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 220)
+        )
+        titleAlpha.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 260)
+        )
+        scale.animateTo(
+            targetValue = 1.55f,
+            animationSpec = tween(
+                durationMillis = 1250,
+                easing = FastOutSlowInEasing
+            )
+        )
+        delay(240)
+        titleAlpha.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = 180)
+        )
+        alpha.animateTo(
+            targetValue = 0f,
+            animationSpec = tween(durationMillis = 240)
+        )
+        onFinished()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.splash_logo_new),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(150.dp)
+                    .graphicsLayer(
+                        scaleX = scale.value,
+                        scaleY = scale.value,
+                        alpha = alpha.value
+                    )
+            )
+
+            Spacer(modifier = Modifier.height(22.dp))
+
+            Text(
+                text = "ZAMÓWIENIA",
+                fontFamily = FontFamily.Monospace,
+                color = Color(0xFF00C853),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.alpha(titleAlpha.value)
+            )
         }
     }
 }
