@@ -1,1 +1,120 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polityka Prywatności - FakturyAPP</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 900px;
+        margin: auto;
+        padding: 20px;
+        line-height: 1.6;
+        background-color: #ffffff;
+        color: #222222;
+    }
 
+    h1, h2 {
+        color: #000000;
+    }
+
+    h1 {
+        border-bottom: 2px solid #2f80ed;
+        padding-bottom: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Polityka Prywatności - FakturyAPP</h1>
+
+<p><strong>Data aktualizacji:</strong> 21.05.2026</p>
+
+<h2>1. Informacje ogólne</h2>
+<p>
+Niniejsza Polityka Prywatności opisuje zasady działania aplikacji <strong>FakturyAPP</strong>
+oraz sposób przetwarzania danych użytkowników.
+</p>
+
+<p>
+Aplikacja została stworzona w celu ułatwienia obsługi, zapisywania i przesyłania danych
+związanych z fakturami oraz dokumentami wprowadzanymi przez użytkownika.
+</p>
+
+<h2>2. Jakie dane mogą być przetwarzane</h2>
+<p>Aplikacja może przetwarzać dane wprowadzone przez użytkownika, takie jak:</p>
+
+<ul>
+    <li>nazwa kontrahenta,</li>
+    <li>numer dokumentu,</li>
+    <li>data dokumentu,</li>
+    <li>ilość pozycji,</li>
+    <li>kwota,</li>
+    <li>adres,</li>
+    <li>inne informacje wpisane w formularzu aplikacji.</li>
+</ul>
+
+<p>
+Aplikacja może również przetwarzać podstawowe informacje techniczne potrzebne do prawidłowego działania aplikacji,
+takie jak data i godzina wysłania danych.
+</p>
+
+<h2>3. Korzystanie z internetu</h2>
+<p>
+Aplikacja korzysta z połączenia internetowego w celu przesyłania danych do usługi Google Apps Script.
+Dane przesyłane są wyłącznie w zakresie niezbędnym do działania aplikacji.
+</p>
+
+<h2>4. Google Apps Script i usługi Google</h2>
+<p>
+Aplikacja jest połączona z usługą Google Apps Script, która może przekazywać dane do usług Google,
+takich jak Google Sheets lub inne narzędzia wykorzystywane do obsługi danych.
+</p>
+
+<p>
+Dane nie są sprzedawane ani udostępniane osobom trzecim w celach reklamowych.
+</p>
+
+<h2>5. Przechowywanie danych</h2>
+<p>
+Dane mogą być przechowywane lokalnie na urządzeniu użytkownika oraz przesyłane do zewnętrznych usług Google
+wykorzystywanych przez aplikację.
+</p>
+
+<p>
+Zakres przechowywanych danych zależy od funkcji używanych w aplikacji.
+</p>
+
+<h2>6. Uprawnienia aplikacji</h2>
+<p>
+Aplikacja może wymagać dostępu do internetu. Dostęp ten jest wykorzystywany wyłącznie do komunikacji
+z usługą Google Apps Script i przesyłania danych wprowadzonych przez użytkownika.
+</p>
+
+<h2>7. Bezpieczeństwo danych</h2>
+<p>
+Autor aplikacji dokłada starań, aby dane były przetwarzane w sposób bezpieczny i zgodny z przeznaczeniem aplikacji.
+Użytkownik powinien korzystać z aplikacji zgodnie z jej przeznaczeniem i nie wprowadzać danych,
+których nie chce przesyłać do systemu.
+</p>
+
+<h2>8. Prawa użytkownika</h2>
+<p>
+Użytkownik ma prawo do informacji o danych przetwarzanych przez aplikację oraz może zgłosić prośbę
+o ich usunięcie, jeśli dane są przechowywane w systemie powiązanym z aplikacją.
+</p>
+
+<h2>9. Zmiany w Polityce Prywatności</h2>
+<p>
+Polityka Prywatności może być aktualizowana w przypadku zmian w działaniu aplikacji,
+dodania nowych funkcji lub zmiany sposobu przetwarzania danych.
+</p>
+
+<h2>10. Kontakt</h2>
+<p>
+W sprawach związanych z prywatnością i działaniem aplikacji można skontaktować się z autorem aplikacji.
+</p>
+
+</body>
+</html>
