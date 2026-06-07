@@ -1,0 +1,15 @@
+{
+  "name": "Zgłoszenia",
+  "short_name": "Zgłoszenia",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f4f6",
+  "theme_color": "#6650a4",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/damiano88s/ZamowieniaAPP/master/GRAFIKA/ikonaGIT.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
